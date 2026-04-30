@@ -22,6 +22,7 @@ const confirmModalTitle = document.getElementById("confirmModalTitle");
 const confirmModalMessage = document.getElementById("confirmModalMessage");
 const guideModal = document.getElementById("guideModal");
 const topToggleButton = document.getElementById("topToggleButton");
+const mobileEditorSheet = document.getElementById("mobileEditorSheet");
 const gradeStorage = window.gradeStorage;
 const gradePdfParser = window.gradePdfParser;
 let toastTimer = null;
@@ -42,6 +43,7 @@ const appState = {
     pendingDeleteSemesterKey: null,
     currentFeature: "bang-diem",
     totalProgramCredits: Number(localStorage.getItem(PROGRAM_CREDITS_KEY) || 0) || 0,
+    mobileEditorSubjectId: null,
 };
 
 document.addEventListener("click", handleDocumentClick);
@@ -212,6 +214,7 @@ function renderFeatureTabs() {
         panel.classList.toggle("is-active", isActive);
         panel.hidden = !isActive;
     });
+
 }
 
 function switchFeature(featureName) {
@@ -238,6 +241,10 @@ function closeJsonMenu() {
 function toggleJsonMenu() {
     if (!jsonMenu) return;
     jsonMenu.classList.toggle("is-open");
+}
+
+function isMobileViewport() {
+    return window.matchMedia("(max-width: 767.98px)").matches;
 }
 
 // Chuẩn hóa object trạng thái học kỳ chỉ với 2 cờ chính: fixed và userCreated.
@@ -600,6 +607,9 @@ function addSubjectToSemester(semesterKey) {
 
     appState.sourceSubjects.push(newSubject);
     appState.openEditorSubjectId = newSubject.__id;
+    if (isMobileViewport()) {
+        appState.mobileEditorSubjectId = newSubject.__id;
+    }
     appState.hasUnsavedChanges = true;
     rebuildDerivedSubjects();
     persistLocalState();
@@ -618,6 +628,9 @@ function deleteSubject(subjectId) {
 
     appState.sourceSubjects = appState.sourceSubjects.filter((item) => item.__id !== subjectId);
     appState.openEditorSubjectId = null;
+    if (appState.mobileEditorSubjectId === subjectId) {
+        appState.mobileEditorSubjectId = null;
+    }
     appState.hasUnsavedChanges = true;
     rebuildDerivedSubjects();
     persistLocalState();
@@ -699,6 +712,14 @@ function closeGuideModal() {
     guideModal.setAttribute("aria-hidden", "true");
 }
 
+function closeMobileEditorSheet() {
+    appState.mobileEditorSubjectId = null;
+    document.body.classList.remove("mobile-editor-open");
+    if (!mobileEditorSheet) return;
+    mobileEditorSheet.classList.remove("is-open");
+    mobileEditorSheet.setAttribute("aria-hidden", "true");
+}
+
 function confirmDeleteSemester() {
     // Xóa cả kỳ và toàn bộ môn thuộc kỳ đó sau xác nhận.
     const semesterKey = appState.pendingDeleteSemesterKey;
@@ -748,6 +769,144 @@ function exportStateAsJson() {
     link.remove();
     URL.revokeObjectURL(url);
     showToast("Đã xuất file JSON.", "success");
+}
+
+function normalizeCsvCell(value) {
+    const normalized = String(value ?? "").replace(/"/g, "\"\"");
+    return `"${normalized}"`;
+}
+
+function exportReportAsCsv() {
+    if (!appState.summarySubjects.length) {
+        showToast("Chưa có dữ liệu để xuất CSV.", "error");
+        return;
+    }
+
+    const resolved = resolveRetakes(appState.summarySubjects);
+    const semesterKeys = sortSemesterKeys(Object.keys(resolved.byHocKy), "asc");
+    const lines = [[
+        "Hoc ky", "Ma mon", "Ten mon", "Nhom", "Tin chi", "He 10", "He 4", "Diem chu", "Trang thai"
+    ].join(",")];
+
+    semesterKeys.forEach((semesterKey) => {
+        (resolved.byHocKy[semesterKey] || []).forEach((subject) => {
+            lines.push([
+                normalizeCsvCell(subject.hoc_ky),
+                normalizeCsvCell(subject.ma_mon),
+                normalizeCsvCell(subject.ten_mon),
+                normalizeCsvCell(subject.nhom || "01"),
+                normalizeCsvCell(formatInteger(subject.so_tin_chi)),
+                normalizeCsvCell(hasResolvedGrade(subject) ? formatNumber(subject.diem_he_10, 1) : "--"),
+                normalizeCsvCell(hasResolvedGrade(subject) ? formatNumber(subject.diem_he_4, 1) : "--"),
+                normalizeCsvCell(hasResolvedGrade(subject) ? (subject.diem_chu || "--") : "--"),
+                normalizeCsvCell(hasResolvedGrade(subject) ? (subject.passed ? "Dat" : "Khong dat") : "Chua co diem"),
+            ].join(","));
+        });
+    });
+
+    const overall = calculateCumulativeGPAFull(appState.summarySubjects.filter((item) => isSemesterConfirmed(item.hoc_ky)));
+    lines.push("");
+    lines.push(["Tong ket", "", "", "", "", "", "", "", ""].join(","));
+    lines.push([
+        normalizeCsvCell("GPA tich luy he 4"),
+        normalizeCsvCell(overall.co_du_lieu ? formatNumber(overall.gpa4, 2) : "--"),
+        "", "", "", "", "", "", ""
+    ].join(","));
+    lines.push([
+        normalizeCsvCell("GPA tich luy he 10"),
+        normalizeCsvCell(overall.co_du_lieu ? formatNumber(overall.gpa10, 2) : "--"),
+        "", "", "", "", "", "", ""
+    ].join(","));
+    lines.push([
+        normalizeCsvCell("Tin chi tich luy"),
+        normalizeCsvCell(overall.co_du_lieu ? formatInteger(overall.tong_tin) : "--"),
+        "", "", "", "", "", "", ""
+    ].join(","));
+
+    const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const now = new Date();
+    const pad = (value) => String(value).padStart(2, "0");
+    const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    link.href = url;
+    link.download = `sgu-grade-report_${stamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast("Đã xuất báo cáo CSV.", "success");
+}
+
+function exportReportAsPdf() {
+    if (!appState.summarySubjects.length) {
+        showToast("Chưa có dữ liệu để xuất PDF.", "error");
+        return;
+    }
+
+    const confirmedSubjects = appState.summarySubjects.filter((item) => isSemesterConfirmed(item.hoc_ky));
+    const cumulative = calculateCumulativeGPAFull(confirmedSubjects);
+    const rows = appState.summarySubjects.map((subject, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${escapeHtml(subject.hoc_ky || "--")}</td>
+            <td>${escapeHtml(subject.ma_mon || "--")}</td>
+            <td>${escapeHtml(subject.ten_mon || "--")}</td>
+            <td>${escapeHtml(formatInteger(subject.so_tin_chi))}</td>
+            <td>${escapeHtml(hasResolvedGrade(subject) ? formatNumber(subject.diem_he_10, 1) : "--")}</td>
+            <td>${escapeHtml(hasResolvedGrade(subject) ? formatNumber(subject.diem_he_4, 1) : "--")}</td>
+            <td>${escapeHtml(hasResolvedGrade(subject) ? (subject.diem_chu || "--") : "--")}</td>
+        </tr>
+    `).join("");
+
+    const reportWindow = window.open("", "_blank", "width=1000,height=760");
+    if (!reportWindow) {
+        showToast("Trình duyệt đang chặn popup khi xuất PDF.", "error");
+        return;
+    }
+
+    reportWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="vi">
+        <head>
+            <meta charset="utf-8">
+            <title>Báo cáo học tập SGU</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; color: #1f2937; }
+                h1 { margin: 0 0 6px; font-size: 22px; }
+                p { margin: 0 0 4px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 12px; }
+                th, td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; vertical-align: top; }
+                th { background: #f3f4f6; }
+            </style>
+        </head>
+        <body>
+            <h1>Báo cáo học tập SGU</h1>
+            <p>Thời gian xuất: ${escapeHtml(new Date().toLocaleString("vi-VN"))}</p>
+            <p>GPA tích lũy hệ 4: <strong>${cumulative.co_du_lieu ? escapeHtml(formatNumber(cumulative.gpa4, 2)) : "--"}</strong></p>
+            <p>GPA tích lũy hệ 10: <strong>${cumulative.co_du_lieu ? escapeHtml(formatNumber(cumulative.gpa10, 2)) : "--"}</strong></p>
+            <p>Tín chỉ tích lũy: <strong>${cumulative.co_du_lieu ? escapeHtml(formatInteger(cumulative.tong_tin)) : "--"}</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Học kỳ</th>
+                        <th>Mã môn</th>
+                        <th>Tên môn</th>
+                        <th>Tín chỉ</th>
+                        <th>Hệ 10</th>
+                        <th>Hệ 4</th>
+                        <th>Chữ</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </body>
+        </html>
+    `);
+    reportWindow.document.close();
+    reportWindow.focus();
+    reportWindow.print();
 }
 
 function importJsonPayload(payload, importedName = "") {
@@ -886,6 +1045,20 @@ function handleDocumentClick(event) {
         return;
     }
 
+    const exportCsvButton = event.target.closest('[data-action="export-csv"]');
+    if (exportCsvButton) {
+        closeJsonMenu();
+        exportReportAsCsv();
+        return;
+    }
+
+    const exportPdfButton = event.target.closest('[data-action="export-report-pdf"]');
+    if (exportPdfButton) {
+        closeJsonMenu();
+        exportReportAsPdf();
+        return;
+    }
+
     const addSemesterButton = event.target.closest('[data-action="add-semester"]');
     if (addSemesterButton) {
         addSemester();
@@ -928,6 +1101,13 @@ function handleDocumentClick(event) {
         return;
     }
 
+    const closeMobileEditorButton = event.target.closest('[data-action="close-mobile-editor"]');
+    if (closeMobileEditorButton) {
+        closeMobileEditorSheet();
+        renderDashboard();
+        return;
+    }
+
     const confirmModalButton = event.target.closest('[data-action="confirm-delete-semester"]');
     if (confirmModalButton) {
         confirmDeleteSemester();
@@ -967,7 +1147,13 @@ function handleDocumentClick(event) {
     const toggleButton = event.target.closest('[data-action="toggle-editor"]');
     if (toggleButton) {
         const { subjectId } = toggleButton.dataset;
-        appState.openEditorSubjectId = appState.openEditorSubjectId === subjectId ? null : subjectId;
+        if (isMobileViewport()) {
+            appState.mobileEditorSubjectId = appState.mobileEditorSubjectId === subjectId ? null : subjectId;
+            appState.openEditorSubjectId = null;
+        } else {
+            appState.openEditorSubjectId = appState.openEditorSubjectId === subjectId ? null : subjectId;
+            appState.mobileEditorSubjectId = null;
+        }
         renderDashboard();
         return;
     }
@@ -1071,7 +1257,3 @@ async function initializeApp() {
 }
 
 initializeApp();
-
-
-
-

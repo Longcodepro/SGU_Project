@@ -440,6 +440,7 @@ input:focus-visible {
     align-content: start;
 }
 
+
 .dashboard-actions {
     display: flex;
     justify-content: flex-end;
@@ -1257,6 +1258,10 @@ input:focus-visible {
     box-shadow: var(--shadow-inset);
 }
 
+.mobile-editor-sheet {
+    display: none;
+}
+
 body.top-collapsed .page-shell {
     grid-template-rows: minmax(0, 1fr);
     gap: 10px;
@@ -1292,6 +1297,7 @@ body.top-collapsed .site-footer {
     .basic-edit-grid {
         grid-template-columns: 1fr 1fr;
     }
+
 }
 
 @media (max-width: 860px) {
@@ -1309,6 +1315,7 @@ body.top-collapsed .site-footer {
 
     .site-content {
         overflow: visible;
+        overflow-x: hidden;
         padding-right: 0;
     }
 
@@ -1490,5 +1497,505 @@ body.top-collapsed .site-footer {
 
     .guide-step__image {
         width: 88%;
+    }
+}
+
+@media (max-width: 767.98px) {
+    body.mobile-editor-open {
+        overflow: hidden;
+    }
+
+    body {
+        overflow: auto;
+        overflow-x: hidden;
+    }
+
+    .page-shell {
+        width: calc(100vw - 8px);
+        max-width: calc(100vw - 8px);
+        min-height: calc(100dvh - 10px);
+        height: auto;
+        margin: 4px auto;
+        gap: 8px;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        overflow-x: hidden;
+    }
+
+    .site-header,
+    .control-combo,
+    .overview-panel,
+    .summary-strip,
+    .prediction-grid,
+    .basic-edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .site-header {
+        gap: 8px;
+    }
+
+    .site-header__brand,
+    .control-combo,
+    .site-menu,
+    .dashboard-shell,
+    .semester-section,
+    .site-footer,
+    .graduation-planner-panel,
+    .placeholder-panel {
+        border-radius: 18px;
+    }
+
+    .site-header__brand,
+    .control-combo,
+    .site-menu,
+    .dashboard-shell,
+    .semester-section,
+    .site-footer {
+        overflow-x: hidden;
+    }
+
+    .site-header__brand {
+        padding: 10px;
+    }
+
+    .brand-mark {
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .brand-mark__logo {
+        width: 46px;
+        height: 46px;
+    }
+
+    .brand-mark__title {
+        font-size: 0.95rem;
+        line-height: 1.2;
+        letter-spacing: 0;
+    }
+
+    .control-combo {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .control-combo__mode {
+        border-left: 0;
+        border-top: 1px solid rgb(163 177 198 / 0.42);
+        padding-left: 0;
+        padding-top: 8px;
+    }
+
+    .upload-card {
+        min-height: 94px;
+        padding: 8px;
+        gap: 6px;
+    }
+
+    .upload-card__title {
+        font-size: 0.86rem;
+    }
+
+    .upload-card__value {
+        width: 100%;
+        min-width: 0;
+        height: 42px;
+        border-radius: 12px;
+        font-size: 0.88rem;
+    }
+
+    .upload-card__note {
+        max-width: 100%;
+        font-size: 0.78rem;
+        line-height: 1.25;
+    }
+
+    .guide-trigger-button {
+        min-height: 30px;
+        font-size: 0.72rem;
+    }
+
+    .mode-card {
+        padding: 8px;
+        gap: 6px;
+    }
+
+    .mode-card__question {
+        font-size: 0.76rem;
+    }
+
+    .grade-switch {
+        min-height: 46px;
+        padding: 6px;
+        gap: 4px;
+        border-radius: 14px;
+    }
+
+    .grade-switch__label {
+        font-size: 0.66rem;
+    }
+
+    .grade-switch__slider {
+        width: 48px;
+        height: 26px;
+    }
+
+    .grade-switch__slider::after {
+        width: 18px;
+        height: 18px;
+        top: 3px;
+        left: 3px;
+    }
+
+    .grade-switch__toggle input:checked + .grade-switch__slider::after {
+        transform: translateX(22px);
+    }
+
+    .site-menu {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px;
+        overflow: visible;
+    }
+
+    .site-menu > * {
+        min-width: 0;
+    }
+
+    .menu-tab,
+    .menu-dropdown__item {
+        min-height: 38px;
+        border-radius: 12px;
+        font-size: 0.78rem;
+        letter-spacing: 0;
+        padding: 0 6px;
+        width: 100%;
+    }
+
+    .menu-dropdown__panel {
+        position: static;
+        margin-top: 6px;
+        min-width: 0;
+        border-radius: 12px;
+        padding: 6px;
+        gap: 6px;
+    }
+
+    .site-content {
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    .feature-panel.is-active {
+        gap: 8px;
+    }
+
+
+    .dashboard-actions {
+        justify-content: stretch;
+    }
+
+    .planner-button {
+        width: 100%;
+        min-height: 38px;
+        border-radius: 12px;
+        font-size: 0.78rem;
+    }
+
+    .overview-panel {
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .overview-column {
+        border-radius: 14px;
+        padding: 12px;
+    }
+
+    .metric-item {
+        font-size: 0.95rem;
+    }
+
+    .pie-chart {
+        width: min(220px, 100%);
+    }
+
+    .pie-callout text {
+        font-size: 10px;
+    }
+
+    .semester-list {
+        gap: 8px;
+        padding: 0 6px 8px;
+    }
+
+    .semester-section {
+        padding: 8px;
+    }
+
+    .semester-title {
+        margin: 0 0 8px;
+        padding: 10px;
+        border-radius: 14px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.95rem;
+    }
+
+    .semester-title__actions {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 6px;
+    }
+
+    .semester-title__meta {
+        font-size: 0.75rem;
+        padding: 6px 8px;
+    }
+
+    .semester-confirm,
+    .semester-delete,
+    .add-subject-button,
+    .delete-subject-button,
+    .action-toggle {
+        min-height: 34px;
+        border-radius: 10px;
+        padding: 0 7px;
+        font-size: 0.72rem;
+    }
+
+    .semester-table-wrap {
+        position: relative;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
+        padding-bottom: 4px;
+        border-radius: 14px;
+    }
+
+    .semester-table {
+        min-width: 880px;
+    }
+
+    .semester-table thead th {
+        font-size: 0.66rem;
+        padding: 8px 6px;
+    }
+
+    .semester-table td {
+        padding: 9px 7px;
+        font-size: 0.82rem;
+    }
+
+    .action-cell {
+        padding-inline: 5px;
+    }
+
+    .action-toggle,
+    .action-placeholder {
+        min-width: 72px;
+    }
+
+    .prediction-panel {
+        margin: 4px;
+        padding: 8px;
+        border-radius: 12px;
+        gap: 8px;
+    }
+
+    .prediction-panel__title {
+        font-size: 0.86rem;
+        text-align: center;
+    }
+
+    .prediction-panel__hint,
+    .prediction-panel__note,
+    .basic-edit-field__label,
+    .control-field__label {
+        font-size: 0.76rem;
+    }
+
+    .summary-strip {
+        gap: 8px;
+    }
+
+    .summary-block {
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .graduation-planner-panel {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .graduation-planner-panel__title {
+        font-size: 1rem;
+    }
+
+    .graduation-planner-panel__hint,
+    .graduation-goal-card__text,
+    .graduation-goal-empty {
+        font-size: 0.86rem;
+    }
+
+    .graduation-goal-card {
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .empty-state,
+    .placeholder-panel {
+        padding: 16px 10px;
+    }
+
+    .empty-state h2,
+    .placeholder-panel h2 {
+        font-size: 1.1rem;
+    }
+
+    .empty-state p,
+    .placeholder-panel p {
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+
+    .guide-modal__panel {
+        width: calc(100vw - 14px);
+        max-height: calc(100dvh - 16px);
+        margin-top: 8px;
+        padding: 10px;
+        border-radius: 16px;
+        gap: 8px;
+    }
+
+    .guide-modal__steps {
+        gap: 8px;
+        max-height: calc(100dvh - 180px);
+        padding-right: 2px;
+    }
+
+    .guide-step {
+        border-radius: 12px;
+        padding: 8px;
+    }
+
+    .guide-step__text {
+        font-size: 0.82rem;
+        padding: 7px 8px;
+    }
+
+    .guide-step__image {
+        width: 92%;
+    }
+
+    .toast {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        max-width: none;
+        font-size: 0.86rem;
+        padding: 10px 12px;
+    }
+
+    .site-footer {
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 0.74rem;
+        text-align: center;
+    }
+
+    .header-toggle-button {
+        top: 8px;
+        right: 8px;
+        min-height: 28px;
+        padding: 0 8px;
+        font-size: 0.66rem;
+    }
+
+    .mobile-editor-sheet {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        z-index: 98;
+        display: none;
+    }
+
+    .mobile-editor-sheet.is-open {
+        display: block;
+    }
+
+    .mobile-editor-sheet__panel {
+        border-radius: 16px;
+        background: var(--surface);
+        box-shadow: var(--shadow-extrude);
+        border: 1px solid rgb(163 177 198 / 0.35);
+        max-height: 76dvh;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .mobile-editor-sheet__header {
+        padding: 10px 12px 8px;
+        border-bottom: 1px solid rgb(163 177 198 / 0.28);
+        text-align: center;
+    }
+
+    .mobile-editor-sheet__title {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", "DM Sans", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 800;
+    }
+
+    .mobile-editor-sheet__body {
+        overflow-y: auto;
+        padding: 8px 10px;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+    }
+
+    .mobile-editor-sheet .prediction-panel {
+        margin: 0;
+        border: 0;
+        background: transparent;
+        padding: 0;
+    }
+
+    .mobile-editor-sheet .prediction-panel__header,
+    .mobile-editor-sheet .prediction-panel__hint {
+        display: none;
+    }
+
+    .mobile-editor-sheet .basic-edit-grid,
+    .mobile-editor-sheet .prediction-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .mobile-editor-sheet .control-field__input {
+        grid-template-columns: 36px minmax(0, 1fr) 36px;
+    }
+
+    .mobile-editor-sheet__footer {
+        padding: 8px 10px 10px;
+        border-top: 1px solid rgb(163 177 198 / 0.28);
+    }
+
+    .mobile-editor-sheet__close {
+        width: 100%;
+        min-height: 36px;
+        border: 0;
+        border-radius: 10px;
+        color: #ffffff;
+        font-weight: 700;
+        background: linear-gradient(145deg, var(--accent-light), var(--accent));
+        box-shadow: var(--shadow-extrude-sm);
     }
 }

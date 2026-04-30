@@ -205,6 +205,39 @@ function renderPredictionRow(subject) {
     `;
 }
 
+function renderMobileEditorSheet() {
+    if (!mobileEditorSheet) return;
+    const shouldUseMobileSheet = appState.currentFeature === "bang-diem" && isMobileViewport() && !!appState.mobileEditorSubjectId;
+    mobileEditorSheet.classList.toggle("is-open", shouldUseMobileSheet);
+    mobileEditorSheet.setAttribute("aria-hidden", shouldUseMobileSheet ? "false" : "true");
+    document.body.classList.toggle("mobile-editor-open", shouldUseMobileSheet);
+
+    if (!shouldUseMobileSheet) {
+        mobileEditorSheet.innerHTML = "";
+        return;
+    }
+
+    const subject = getSubjectById(appState.mobileEditorSubjectId);
+    if (!subject) {
+        mobileEditorSheet.innerHTML = "";
+        return;
+    }
+
+    mobileEditorSheet.innerHTML = `
+        <div class="mobile-editor-sheet__panel">
+            <div class="mobile-editor-sheet__header">
+                <h3 class="mobile-editor-sheet__title">${isSemesterConfirmed(subject.hoc_ky) ? "Xem môn học" : "Sửa thông tin môn học"}</h3>
+            </div>
+            <div class="mobile-editor-sheet__body">
+                ${renderPredictionRow(subject).replace(/^<tr class="prediction-row">\s*<td colspan="10">/, "").replace(/<\/td>\s*<\/tr>$/, "")}
+            </div>
+            <div class="mobile-editor-sheet__footer">
+                <button class="mobile-editor-sheet__close" type="button" data-action="close-mobile-editor">Đóng & Lưu</button>
+            </div>
+        </div>
+    `;
+}
+
 // Render nút thao tác của một môn.
 function renderActionCell(subject) {
     if (!isPredictableSubject(subject)) {
@@ -248,7 +281,9 @@ function renderSubjectRow(subject, index) {
     const letter = hasResolvedGrade(subject)
         ? (subject.diem_chu || convert10toLetter(subject.diem_he_10, appState.gradeType))
         : "--";
-    const shouldOpenEditor = isPredictableSubject(subject) && appState.openEditorSubjectId === subject.__id;
+    const shouldOpenEditor = isPredictableSubject(subject)
+        && !isMobileViewport()
+        && appState.openEditorSubjectId === subject.__id;
 
     return `
         <tr>
@@ -603,4 +638,5 @@ function renderDashboard() {
     }).join("");
 
     renderGraduationPlanner();
+    renderMobileEditorSheet();
 }

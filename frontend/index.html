@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Web hỗ trợ sinh viên SGU nạp bảng điểm PDF, tính GPA học kỳ - tích lũy, lập kế hoạch GPA tốt nghiệp và xuất báo cáo nhanh.">
+    <meta name="keywords" content="SGU, GPA, bảng điểm, tính điểm, tốt nghiệp, sinh viên">
+    <meta name="author" content="Nguyễn Thành Long">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Hỗ trợ tính điểm học tập SGU">
+    <meta property="og:description" content="Nạp PDF bảng điểm, tính GPA, theo dõi tích lũy và xuất báo cáo học tập nhanh.">
+    <meta property="og:image" content="assets/images/logo/sgu.jpg">
+    <meta property="og:locale" content="vi_VN">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Hỗ trợ tính điểm học tập SGU">
+    <meta name="twitter:description" content="Nạp PDF bảng điểm, tính GPA, theo dõi tích lũy và xuất báo cáo học tập nhanh.">
+    <meta name="twitter:image" content="assets/images/logo/sgu.jpg">
     <title>Hỗ trợ tính điểm học tập</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -47,12 +59,14 @@
         </header>
 
         <nav class="site-menu" aria-label="Chức năng chính">
-            <button class="menu-tab is-active" type="button" data-action="switch-feature" data-feature="bang-diem">Bảng điểm</button>
+                <button class="menu-tab is-active" type="button" data-action="switch-feature" data-feature="bang-diem">Bảng điểm</button>
             <div class="menu-dropdown" id="jsonMenu">
                 <button class="menu-tab" type="button" data-action="toggle-json-menu">Nhập/Xuất JSON</button>
                 <div class="menu-dropdown__panel" role="menu" aria-label="Tùy chọn JSON">
                     <button class="menu-dropdown__item" type="button" data-action="export-json">Xuất JSON</button>
                     <button class="menu-dropdown__item" type="button" data-action="import-json">Nhập JSON</button>
+                    <button class="menu-dropdown__item" type="button" data-action="export-csv">Xuất CSV</button>
+                    <button class="menu-dropdown__item" type="button" data-action="export-report-pdf">Xuất báo cáo PDF</button>
                 </div>
             </div>
             <button class="menu-tab" type="button" data-action="switch-feature" data-feature="gpa-tot-nghiep">GPA tốt nghiệp</button>
@@ -83,7 +97,7 @@
             <section class="feature-panel" data-feature-panel="thoi-khoa-bieu" hidden>
                 <section class="placeholder-panel">
                     <h2>Thời khóa biểu</h2>
-                    <p>Khu vực này sẽ được triển khai theo chỉ đạo tiếp theo của bạn.</p>
+                    <p>Khu vực này sẽ được triển khai trong tương lai :))</p>
                 </section>
             </section>
         </main>
@@ -133,6 +147,7 @@
             </div>
         </div>
     </div>
+    <div id="mobileEditorSheet" class="mobile-editor-sheet" aria-hidden="true"></div>
 
     <script src="js/calculator.js"></script>
     <script src="js/utils/gradeTypeUtils.js"></script>
