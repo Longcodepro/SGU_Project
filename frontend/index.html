@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hỗ trợ tính điểm học tập</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="site-header">
+            <div class="site-header__brand">
+                <div class="brand-mark">
+                    <img
+                        class="brand-mark__logo"
+                        src="assets/images/logo/sgu.jpg"
+                        alt="Logo Trường Đại học Sài Gòn"
+                    >
+                    <span class="brand-mark__title">Hỗ trợ tính điểm học tập</span>
+                </div>
+            </div>
+
+            <section class="control-combo" aria-label="Điều khiển nguồn dữ liệu và chế độ">
+                <div class="control-combo__upload">
+                    <div class="upload-card upload-card--compact">
+                        <span class="upload-card__title">Nạp file PDF</span>
+                        <span class="upload-card__value" id="uploadLabel" role="button" tabindex="0" aria-label="Chọn file PDF">+</span>
+                        <span class="upload-card__note" id="uploadCustomNote">Bạn lấy bảng điểm từ tài khoản sinh viên.</span>
+                        <button id="guideOpenButton" class="guide-trigger-button" type="button" data-action="open-guide-modal">Hướng dẫn</button>
+                    </div>
+                </div>
+
+                <div class="control-combo__mode">
+                    <section class="mode-card mode-card--compact">
+                        <span class="mode-card__question">Bạn thuộc khóa nào ?</span>
+                        <div class="grade-switch grade-switch--hero" role="group" aria-label="Dạng tính điểm">
+                            <span class="grade-switch__label">K24 trở lên</span>
+                            <label class="grade-switch__toggle">
+                                <input id="globalGradeSwitch" type="checkbox" data-action="toggle-grade-type">
+                                <span class="grade-switch__slider"></span>
+                            </label>
+                            <span class="grade-switch__label">K25 trở về</span>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </header>
+
+        <nav class="site-menu" aria-label="Chức năng chính">
+            <button class="menu-tab is-active" type="button" data-action="switch-feature" data-feature="bang-diem">Bảng điểm</button>
+            <div class="menu-dropdown" id="jsonMenu">
+                <button class="menu-tab" type="button" data-action="toggle-json-menu">Nhập/Xuất JSON</button>
+                <div class="menu-dropdown__panel" role="menu" aria-label="Tùy chọn JSON">
+                    <button class="menu-dropdown__item" type="button" data-action="export-json">Xuất JSON</button>
+                    <button class="menu-dropdown__item" type="button" data-action="import-json">Nhập JSON</button>
+                </div>
+            </div>
+            <button class="menu-tab" type="button" data-action="switch-feature" data-feature="gpa-tot-nghiep">GPA tốt nghiệp</button>
+            <button class="menu-tab" type="button" data-action="switch-feature" data-feature="thoi-khoa-bieu">Thời khóa biểu</button>
+            <input type="file" id="jsonInput" accept=".json,application/json" hidden>
+        </nav>
+        <input type="file" id="pdfInput" accept=".pdf" hidden>
+
+        <main class="site-content">
+            <section class="feature-panel is-active" data-feature-panel="bang-diem">
+                <section class="dashboard-actions">
+                    <button class="planner-button" type="button" data-action="add-semester">+ Thêm học kỳ</button>
+                </section>
+
+                <section class="dashboard-shell">
+                    <section id="overview-panel" class="overview-panel"></section>
+                    <div id="semester-container" class="semester-list"></div>
+                </section>
+            </section>
+
+            <section class="feature-panel" data-feature-panel="gpa-tot-nghiep" hidden>
+                <section id="graduationPlannerPanel" class="graduation-planner-panel">
+                    <h2 class="graduation-planner-panel__title">Tính GPA tốt nghiệp</h2>
+                    <p class="graduation-planner-panel__hint">Nhập tổng tín chỉ toàn khóa để xem tín chỉ tối thiểu A/B/C/D/F cho mức hiện tại và các mốc xếp loại cao hơn.</p>
+                </section>
+            </section>
+
+            <section class="feature-panel" data-feature-panel="thoi-khoa-bieu" hidden>
+                <section class="placeholder-panel">
+                    <h2>Thời khóa biểu</h2>
+                    <p>Khu vực này sẽ được triển khai theo chỉ đạo tiếp theo của bạn.</p>
+                </section>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <p>Design by Nguyễn Thành Long - nguyenthanhlong2582006@gmail.com</p>
+        </footer>
+    </div>
+
+    <button id="topToggleButton" class="header-toggle-button" type="button" aria-expanded="true">Thu gọn</button>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="confirmModal" class="confirm-modal" aria-hidden="true">
+        <div class="confirm-modal__backdrop" data-action="close-confirm-modal"></div>
+        <div class="confirm-modal__panel" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+            <h3 id="confirmModalTitle" class="confirm-modal__title">Xác nhận</h3>
+            <p id="confirmModalMessage" class="confirm-modal__message">Bạn có chắc chắn muốn thực hiện thao tác này?</p>
+            <div class="confirm-modal__actions">
+                <button class="confirm-modal__button is-muted" type="button" data-action="close-confirm-modal">Hủy</button>
+                <button class="confirm-modal__button" type="button" data-action="confirm-delete-semester">Xóa học kỳ</button>
+            </div>
+        </div>
+    </div>
+    <div id="guideModal" class="guide-modal" aria-hidden="true">
+        <div class="guide-modal__backdrop" data-action="close-guide-modal"></div>
+        <div class="guide-modal__panel" role="dialog" aria-modal="true" aria-labelledby="guideModalTitle">
+            <h3 id="guideModalTitle" class="guide-modal__title">Hướng dẫn lấy file PDF</h3>
+            <div class="guide-modal__steps">
+                <article class="guide-step">
+                    <p class="guide-step__text">Bước 1: Đăng nhập vô tài khoản sinh viên.</p>
+                    <img class="guide-step__image" src="assets/images/guide/buoc-1.png" alt="Ảnh minh họa bước 1">
+                </article>
+                <article class="guide-step">
+                    <p class="guide-step__text">Bước 2: Chọn chức năng xem điểm.</p>
+                    <img class="guide-step__image" src="assets/images/guide/buoc-2.png" alt="Ảnh minh họa bước 2">
+                </article>
+                <article class="guide-step">
+                    <p class="guide-step__text">Bước 3: Chọn in để xuất file pdf.</p>
+                    <img class="guide-step__image" src="assets/images/guide/buoc-3.png" alt="Ảnh minh họa bước 3">
+                </article>
+                <article class="guide-step">
+                    <p class="guide-step__text">Bước 4: Nhấn save để lưu về máy sau đó nạp file pdf lên đây.</p>
+                    <img class="guide-step__image" src="assets/images/guide/buoc-4.png" alt="Ảnh minh họa bước 4">
+                </article>
+            </div>
+            <div class="guide-modal__actions">
+                <button class="guide-modal__close" type="button" data-action="close-guide-modal">Thoát</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/calculator.js"></script>
+    <script src="js/utils/gradeTypeUtils.js"></script>
+    <script src="js/BangDiem.js"></script>
+    <script src="js/GPATotNghiep.js"></script>
+    <script src="js/services/storage/indexed-db.js"></script>
+    <script src="js/services/pdf/grade-parser.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
