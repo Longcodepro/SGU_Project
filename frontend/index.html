@@ -148,6 +148,18 @@
         </div>
     </div>
     <div id="mobileEditorSheet" class="mobile-editor-sheet" aria-hidden="true"></div>
+    <button id="aiChatToggle" class="ai-chat-toggle" type="button" data-action="toggle-ai-chat" aria-expanded="false">Chat AI</button>
+    <aside id="aiChatPanel" class="ai-chat-panel" aria-hidden="true">
+        <header class="ai-chat-panel__header">
+            <h3 class="ai-chat-panel__title">Trợ lý AI</h3>
+            <button class="ai-chat-panel__close" type="button" data-action="close-ai-chat">Đóng</button>
+        </header>
+        <div id="aiChatMessages" class="ai-chat-panel__messages"></div>
+        <div class="ai-chat-panel__composer">
+            <textarea id="aiChatInput" class="ai-chat-panel__input" rows="3" placeholder="Nhập câu hỏi của bạn..."></textarea>
+            <button id="aiChatSend" class="ai-chat-panel__send" type="button" data-action="send-ai-chat">Gửi</button>
+        </div>
+    </aside>
 
     <script src="js/calculator.js"></script>
     <script src="js/utils/gradeTypeUtils.js"></script>

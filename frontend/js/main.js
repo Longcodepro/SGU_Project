@@ -23,6 +23,11 @@ const confirmModalMessage = document.getElementById("confirmModalMessage");
 const guideModal = document.getElementById("guideModal");
 const topToggleButton = document.getElementById("topToggleButton");
 const mobileEditorSheet = document.getElementById("mobileEditorSheet");
+const aiChatToggle = document.getElementById("aiChatToggle");
+const aiChatPanel = document.getElementById("aiChatPanel");
+const aiChatMessages = document.getElementById("aiChatMessages");
+const aiChatInput = document.getElementById("aiChatInput");
+const aiChatSend = document.getElementById("aiChatSend");
 const gradeStorage = window.gradeStorage;
 const gradePdfParser = window.gradePdfParser;
 let toastTimer = null;
@@ -44,6 +49,9 @@ const appState = {
     currentFeature: "bang-diem",
     totalProgramCredits: Number(localStorage.getItem(PROGRAM_CREDITS_KEY) || 0) || 0,
     mobileEditorSubjectId: null,
+    aiChatOpen: false,
+    aiChatSending: false,
+    aiChatHistory: [],
 };
 
 document.addEventListener("click", handleDocumentClick);
@@ -60,6 +68,15 @@ if (uploadLabel && pdfInput) {
         if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
             pdfInput.click();
+        }
+    });
+}
+
+if (aiChatInput) {
+    aiChatInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            sendAiChatMessage();
         }
     });
 }
@@ -201,6 +218,89 @@ function showToast(message, type = "info") {
     toastTimer = setTimeout(() => {
         toastEl.classList.remove("is-show");
     }, 5000);
+}
+
+function renderAiChatMessages() {
+    if (!aiChatMessages) return;
+
+    if (!appState.aiChatHistory.length) {
+        aiChatMessages.innerHTML = `
+            <div class="ai-chat-msg ai-chat-msg--assistant">
+                Chào bạn, mình là trợ lý AI. Bạn có thể hỏi về GPA, kế hoạch học tập hoặc cách dùng web này.
+            </div>
+        `;
+        return;
+    }
+
+    aiChatMessages.innerHTML = appState.aiChatHistory.map((item) => `
+        <div class="ai-chat-msg ai-chat-msg--${item.role === "assistant" ? "assistant" : "user"}">${escapeHtml(item.content)}</div>
+    `).join("");
+
+    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+}
+
+function renderAiChatPanel() {
+    if (!aiChatPanel || !aiChatToggle) return;
+    aiChatPanel.classList.toggle("is-open", appState.aiChatOpen === true);
+    aiChatPanel.setAttribute("aria-hidden", appState.aiChatOpen ? "false" : "true");
+    aiChatToggle.setAttribute("aria-expanded", appState.aiChatOpen ? "true" : "false");
+    aiChatToggle.textContent = appState.aiChatOpen ? "Đóng Chat" : "Chat AI";
+    if (aiChatSend) {
+        aiChatSend.disabled = appState.aiChatSending === true;
+    }
+    renderAiChatMessages();
+}
+
+function openAiChat() {
+    appState.aiChatOpen = true;
+    renderAiChatPanel();
+}
+
+function closeAiChat() {
+    appState.aiChatOpen = false;
+    renderAiChatPanel();
+}
+
+async function sendAiChatMessage() {
+    if (!aiChatInput || appState.aiChatSending) return;
+    const message = aiChatInput.value.trim();
+    if (!message) return;
+
+    appState.aiChatHistory.push({ role: "user", content: message });
+    aiChatInput.value = "";
+    appState.aiChatSending = true;
+    renderAiChatPanel();
+
+    try {
+        const response = await fetch("/api/ai/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                message,
+                history: appState.aiChatHistory.slice(-20),
+            }),
+        });
+
+        const rawText = await response.text();
+        let data = {};
+        if (rawText && rawText.trim()) {
+            try {
+                data = JSON.parse(rawText);
+            } catch (parseError) {
+                throw new Error(`Phản hồi backend không phải JSON: ${rawText.slice(0, 140)}`);
+            }
+        }
+
+        if (!response.ok) {
+            throw new Error(data?.error || `Không gửi được tin nhắn tới AI (HTTP ${response.status}).`);
+        }
+        appState.aiChatHistory.push({ role: "assistant", content: data?.reply || "AI không trả nội dung." });
+    } catch (error) {
+        appState.aiChatHistory.push({ role: "assistant", content: `Lỗi: ${error.message || "Không kết nối được backend AI."}` });
+    } finally {
+        appState.aiChatSending = false;
+        renderAiChatPanel();
+    }
 }
 
 function renderFeatureTabs() {
@@ -981,6 +1081,10 @@ function handleKeydown(event) {
     if (event.key === "Escape" && guideModal?.classList.contains("is-open")) {
         closeGuideModal();
     }
+
+    if (event.key === "Escape" && appState.aiChatOpen) {
+        closeAiChat();
+    }
 }
 
 function handleDocumentChange(event) {
@@ -1022,6 +1126,28 @@ function handleDocumentClick(event) {
     const featureButton = event.target.closest('[data-action="switch-feature"]');
     if (featureButton) {
         switchFeature(featureButton.dataset.feature);
+        return;
+    }
+
+    const toggleAiChatButton = event.target.closest('[data-action="toggle-ai-chat"]');
+    if (toggleAiChatButton) {
+        if (appState.aiChatOpen) {
+            closeAiChat();
+        } else {
+            openAiChat();
+        }
+        return;
+    }
+
+    const closeAiChatButton = event.target.closest('[data-action="close-ai-chat"]');
+    if (closeAiChatButton) {
+        closeAiChat();
+        return;
+    }
+
+    const sendAiChatButton = event.target.closest('[data-action="send-ai-chat"]');
+    if (sendAiChatButton) {
+        sendAiChatMessage();
         return;
     }
 
@@ -1254,6 +1380,7 @@ async function initializeApp() {
 
     renderFeatureTabs();
     renderDashboard();
+    renderAiChatPanel();
 }
 
 initializeApp();
